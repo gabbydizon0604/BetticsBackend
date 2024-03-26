@@ -1,0 +1,43 @@
+module.exports = Object.freeze({
+    Estado_Contabilizado: 2,
+    Tipo_Ingreso: 1,
+    Tipo_Salida: 2,
+    StatusCode_200: 200,
+    Nombre_Anulado: "ANULADO",
+    Estado_Anulado: 3,
+    Path_Reserva: "Producto/ActualizarReserva",
+    Path_Kardex: "Kardex/Registrar",
+    GrupoAdministracion: "AC",
+    ValoresTipoMenu: {
+        Item: 'item',
+        Collapsable: 'collapsable',
+        Group: 'group',
+    },
+    SchemaName: {
+        usuario: "usuario",
+        ubigeo: "ubigeo",
+        estado: "estado",
+        parametro: "parametro",
+        rol: "rol",
+        logErrores: "logErrores",
+        recomendaciones: "recomendaciones",
+        eventosLiga: "eventosLiga",
+        eventosLigaProb: "eventosLigaProb",
+        tableroPosicionesProb: "tableroPosicionesProb",
+        tableroPosiciones: "tableroPosiciones",
+        mensajeEmail: "mensajeEmail"
+    },
+    cacheController: {
+        recomendaciones: {
+            byGetCriterio: 'recomendaciones_criterio_'
+        },
+        tableroPosiciones: {
+            maestros: 'tableroposiciones_maestros_',
+            getCriterio: 'tableroposiciones_getcriterio_',
+        },
+        eventosLiga: {
+            maestros: 'eventosliga_maestros_'
+        }
+
+    }
+});
