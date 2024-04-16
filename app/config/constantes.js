@@ -25,7 +25,8 @@ module.exports = Object.freeze({
         eventosLigaProb: "eventosLigaProb",
         tableroPosicionesProb: "tableroPosicionesProb",
         tableroPosiciones: "tableroPosiciones",
-        mensajeEmail: "mensajeEmail"
+        mensajeEmail: "mensajeEmail",
+        registroRecurrencia: "registroRecurrencia"
     },
     cacheController: {
         recomendaciones: {

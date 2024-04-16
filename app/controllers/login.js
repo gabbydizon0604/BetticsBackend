@@ -9,8 +9,13 @@ exports.getLogin = async(req, res, next) => {
     try {
         const { correoElectronico, password } = req.body;
         const Usuario = getModel(conn, consta.SchemaName.usuario);
+        const registroRecurrenciaModel = getModel(conn, consta.SchemaName.registroRecurrencia);
         // Verificar si el email existe
-        let usuario = await Usuario.findOne({ correoElectronico }).select('_id foto nombres apellidos correoElectronico tipoCliente activo informacion password clienteCulquiId tarjetaCulquiId suscripcionCulquiId billeteraMovilPagadoId billeteraMovilPagadoFecha tipoLicencia');
+        const [usuario, registroRecurrencia] = await Promise.all([
+            Usuario.findOne({ correoElectronico }).select('_id foto nombres apellidos correoElectronico tipoCliente activo informacion password clienteCulquiId tarjetaCulquiId suscripcionCulquiId billeteraMovilPagadoId billeteraMovilPagadoFecha tipoLicencia'),
+            getRegistroRecurrenciaLogin(conn, res, next, registroRecurrenciaModel, { correoElectronico })
+        ])
+
         if (!usuario) {
             return res.status(400).json({
                 message: 'El usuario ingresado no existe.'
@@ -43,8 +48,16 @@ exports.getLogin = async(req, res, next) => {
             billeteraMovilPagadoId: usuario.billeteraMovilPagadoId,
             tipoLicencia: usuario.tipoLicencia
         }
-        const [token] = await Promise.all([
+
+        const dataRecurrencia = {
+            correoElectronico: usuario.correoElectronico,
+            nombreUsuario: usuario.nombres + " "+ usuario.apellidos,
+            cantidadRecurrencia: registroRecurrencia?.cantidadRecurrencia || 0 
+        }
+
+        const [token, resultRegistroRecurrencia] = await Promise.all([
             generarJWT(dataJwt),
+            registroRecurrenciaLogin(req, res, next, registroRecurrenciaModel, dataRecurrencia)
         ])
 
         res.json({
@@ -77,5 +90,55 @@ const controlarMensualidadPorPagoUnico = async(req, res, next, UsuarioModel, usu
     } else {
         return usuario;
     }
+}
 
+const registroRecurrenciaLogin = async(req, res, next, registroRecurrenciaModel, data) => {
+
+    try {
+        
+        let dateNow = new Date();
+        const year = dateNow.getFullYear().toString();
+        const month = dateNow.getMonth().toString();
+        console.log("data")
+        console.log(data)
+        let resultado = await registroRecurrenciaModel.updateOne(
+            { 
+                correoElectronico: data.correoElectronico,
+                aniomes: year + month
+            }, {
+            $set: {
+                aniomes: year + month,
+                activo: true,
+                correoElectronico: data.correoElectronico,
+                nombreUsuario: data.nombreUsuario,
+                cantidadRecurrencia: data.cantidadRecurrencia + 1
+            }
+        }, {upsert: true, setDefaultsOnInsert: true});
+
+        console.log("resultado")
+        console.log(resultado)
+       
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+const getRegistroRecurrenciaLogin = async(req, res, next, registroRecurrenciaModel, data) => {
+
+    try {
+        
+        let dateNow = new Date();
+        const year = dateNow.getFullYear().toString();
+        const month = dateNow.getMonth().toString();
+
+        const registroRecurrencia = await registroRecurrenciaModel.findOne({ 
+            correoElectronico: data.correoElectronico,
+            aniomes: year + month
+        }).select('cantidadRecurrencia');
+
+        return registroRecurrencia;
+       
+    } catch (error) {
+        console.log();
+    }
 }
