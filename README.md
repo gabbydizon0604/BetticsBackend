@@ -21,4 +21,5 @@ If you want to learn more about creating good readme files then refer the follow
 heroku login
 git remote add heroku https://dashboard.heroku.com/apps/dev-apianabet/deploy/heroku-git
 git remote add heroku apianabet 
+heroku git:remote -a apianabet
 npm install --force --legacy-peer-deps
