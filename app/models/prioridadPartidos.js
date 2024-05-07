@@ -46,6 +46,10 @@ const prioridadPartidosSchema = new Schema({
         type: String,
         required: true
     },
+    date_partido : {
+        type: Date,
+        required: true
+    },
     home_image: {
         type: String,
         required: true

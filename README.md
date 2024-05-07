@@ -23,3 +23,4 @@ git remote add heroku https://dashboard.heroku.com/apps/dev-apianabet/deploy/her
 git remote add heroku apianabet 
 heroku git:remote -a apianabet
 npm install --force --legacy-peer-deps
+git push heroku main
