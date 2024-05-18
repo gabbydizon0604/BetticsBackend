@@ -115,7 +115,27 @@ const tableroPosicionesSchema = new Schema({
     activo: {
         type: Boolean,
         default: true
-    } 
+    },
+    cornerstotalesresultado: {
+        type: Number,
+        required: true,
+        default:0
+    },
+    golestotalesresultado: {
+        type: Number,
+        required: true,
+        default:0
+    },
+    tirosaporteriatotalresultado: {
+        type: Number,
+        required: true,
+        default:0
+    },
+    tarjetastotalresultado: {
+        type: Number,
+        required: true,
+        default:0
+    }
 
 }, {
     versionKey: false,
