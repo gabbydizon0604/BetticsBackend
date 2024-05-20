@@ -1,5 +1,5 @@
 const express = require('express')
-const controller = require('../controllers/tableroPosiciones')
+const controller = require('../controllers/resultados')
 const { validarJwt } = require('../middleware/validar-jwt')
 
 const router = express.Router()
