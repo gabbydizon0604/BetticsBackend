@@ -76,7 +76,7 @@ exports.getMaestros = async(req, res, next) => {
         res.send({
             resStatus: 'ok',
             strLeague: strLeague,
-            strFecha: fecha,
+            strFecha: strFecha,
         });
 
     } catch (err) {
