@@ -28,7 +28,8 @@ module.exports = Object.freeze({
         mensajeEmail: "mensajeEmail",
         registroRecurrencia: "registroRecurrencia",
         prioridadPartidos: "prioridadPartidos",
-        resultados: "resultados"
+        resultados: "resultados",
+        partidosJugar: "partidosJugar"
     },
     cacheController: {
         recomendaciones: {
@@ -48,6 +49,9 @@ module.exports = Object.freeze({
             maestros: 'resultados_maestros_',
             getCriterio: 'resultados_getcriterio_',
         },
-
+        partidosJugar: {
+            maestros: 'partidosJugar_maestros_',
+            getCriterio: 'partidosJugar_getcriterio_',
+        },
     }
 });

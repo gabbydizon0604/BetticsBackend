@@ -16,6 +16,7 @@ const emailRouters = require('./app/routes/email')
 const forgorPasswordRouters = require('./app/routes/forgorPassword')
 const prioridadPartidosRouters = require('./app/routes/prioridadPartidos')
 const resultadosRouters = require('./app/routes/resultados')
+const partidosJugarRouters = require('./app/routes/partidosJugar')
     //const logErroresRouters = require('./app/routes/logErrores')
 let cacheProvider = require('./app/shared/cache-provider')
 
@@ -85,6 +86,8 @@ class Server {
         this.app.use(forgorPasswordRouters, errorMiddleware)
         this.app.use(prioridadPartidosRouters, errorMiddleware)
         this.app.use(resultadosRouters, errorMiddleware)
+        this.app.use(partidosJugarRouters, errorMiddleware)
+        
     }
 
     listen() {
