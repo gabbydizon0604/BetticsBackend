@@ -58,11 +58,14 @@ exports.getMaestros = async(req, res, next) => {
 
         const cacheKey = consta.cacheController.resultados.maestros;
         const maestrosCache = await cacheProvider.instance().get(cacheKey);
-        if (maestrosCache)
+        if (maestrosCache){
+            console.log('caeh')
             return res.send({
-                resStatus: 'ok',
-                strLeague: maestrosCache
+                ...maestrosCache,
+                resStatus: 'ok'
             });
+
+        }
 
         const query = { activo: true };
 
@@ -71,7 +74,10 @@ exports.getMaestros = async(req, res, next) => {
             Resultados.distinct("fecha", query)
         ])
 
-        cacheProvider.instance().set(cacheKey, strLeague, 172800); // 2880 segundos correspondientea 2 dias
+        cacheProvider.instance().set(cacheKey, {
+            strLeague: strLeague,
+            strFecha: strFecha
+        }, 172800); // 2880 segundos correspondientea 2 dias
 
         res.send({
             resStatus: 'ok',
