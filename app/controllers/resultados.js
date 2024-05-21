@@ -7,8 +7,11 @@ let cacheProvider = require('../shared/cache-provider')
 
 const options = {
     page: 1,
-    limit: 50,
-    select: '_id fecha hora liga equipoLocal equipoVisitante posicionLocal posicionVisita  cornersProbabilidadMas6 cornersProbabilidadMas7 cornersProbabilidadMas8 cornersProbabilidadMas9 golesProbabilidadMas1 golesProbabilidadMas2 golesProbabilidadMas3 tirosaporteriaProb6 tirosaporteriaProb7 tirosaporteriaProb8 tirosaporteriaProb9 tarjetasProbabilidad3 tarjetasProbabilidad4 tarjetasProbabilidad5 cornersLocalProbMas5 golesLocalProbMas1 tirosaporteriaLocalProb5 tarjetasLocalProb2 cornersHechoTotalesLocalVisita golesHechoTotalesLocalVisita tirosaporteriaTotalProm tarjetasTotalProm idAwayTeam idHomeTeam idEvent cornerstotalesresultado golestotalesresultado tirosaporteriatotalresultado tarjetastotalresultado'
+    limit: 30,
+    select: '_id fecha hora liga equipoLocal equipoVisitante posicionLocal posicionVisita  cornersProbabilidadMas6 cornersProbabilidadMas7 cornersProbabilidadMas8 cornersProbabilidadMas9 golesProbabilidadMas1 golesProbabilidadMas2 golesProbabilidadMas3 tirosaporteriaProb6 tirosaporteriaProb7 tirosaporteriaProb8 tirosaporteriaProb9 tarjetasProbabilidad3 tarjetasProbabilidad4 tarjetasProbabilidad5 cornersLocalProbMas5 golesLocalProbMas1 tirosaporteriaLocalProb5 tarjetasLocalProb2 cornersHechoTotalesLocalVisita golesHechoTotalesLocalVisita tirosaporteriaTotalProm tarjetasTotalProm idAwayTeam idHomeTeam idEvent cornerstotalesresultado golestotalesresultado tirosaporteriatotalresultado tarjetastotalresultado',
+    sort:{
+        fecha: -1 //Sort by Date Added DESC
+    }
 }
 
 exports.insertDataMasivo = async(req, res, next) => {
@@ -63,15 +66,17 @@ exports.getMaestros = async(req, res, next) => {
 
         const query = { activo: true };
 
-        const [strLeague] = await Promise.all([
-            Resultados.distinct("liga", query)
+        const [strLeague, strFecha] = await Promise.all([
+            Resultados.distinct("liga", query),
+            Resultados.distinct("fecha", query)
         ])
 
         cacheProvider.instance().set(cacheKey, strLeague, 172800); // 2880 segundos correspondientea 2 dias
 
         res.send({
             resStatus: 'ok',
-            strLeague: strLeague
+            strLeague: strLeague,
+            strFecha: fecha,
         });
 
     } catch (err) {
@@ -96,8 +101,13 @@ exports.getCriterio = async(req, res, next) => {
         }
         if (req.query.strLeague != null && req.query.strLeague != "null")
             filtro.liga = req.query.strLeague
+
+        if (req.query.strFecha != null && req.query.strFecha != "null")
+            filtro.fecha = req.query.strFecha
             // if (req.query.pageNumber != undefined) options.page = req.query.pageNumber;
             // if (req.query.pageSize != undefined) options.limit = req.query.pageSize;
+        console.log("filtro")
+        console.log(filtro)
         await Resultados.paginate(filtro, options, (err, result) => {
             if (err) throw err;
 
