@@ -7,7 +7,7 @@ let cacheProvider = require('../shared/cache-provider')
 
 const options = {
     page: 1,
-    limit: 30,
+    limit: 50,
     select: '_id fecha hora liga equipoLocal equipoVisitante posicionLocal posicionVisita  cornersProbabilidadMas6 cornersProbabilidadMas7 cornersProbabilidadMas8 cornersProbabilidadMas9 golesProbabilidadMas1 golesProbabilidadMas2 golesProbabilidadMas3 tirosaporteriaProb6 tirosaporteriaProb7 tirosaporteriaProb8 tirosaporteriaProb9 tarjetasProbabilidad3 tarjetasProbabilidad4 tarjetasProbabilidad5 cornersLocalProbMas5 golesLocalProbMas1 tirosaporteriaLocalProb5 tarjetasLocalProb2 cornersHechoTotalesLocalVisita golesHechoTotalesLocalVisita tirosaporteriaTotalProm tarjetasTotalProm idAwayTeam idHomeTeam idEvent cornerstotalesresultado golestotalesresultado tirosaporteriatotalresultado tarjetastotalresultado',
     sort:{
         fecha: -1 //Sort by Date Added DESC
@@ -69,10 +69,21 @@ exports.getMaestros = async(req, res, next) => {
 
         const query = { activo: true };
 
-        const [strLeague, strFecha] = await Promise.all([
+        const [strLeague, strFechaLigaAll] = await Promise.all([
             Resultados.distinct("liga", query),
-            Resultados.distinct("fecha", query)
+            Resultados.aggregate( 
+                [
+                    {"$group": { "_id": { liga: "$liga", fecha: "$fecha" } } }
+                ]
+            )
         ])
+        let strFecha = [];
+        strFechaLigaAll.forEach((x) => {
+            strFecha.push({
+                liga: x._id.liga,
+                fecha: x._id.fecha
+            })
+        });
 
         cacheProvider.instance().set(cacheKey, {
             strLeague: strLeague,
@@ -97,10 +108,10 @@ exports.getCriterio = async(req, res, next) => {
 
         const Resultados = getModel(conn, consta.SchemaName.resultados);
 
-        const cacheKey = consta.cacheController.resultados.getCriterio + (req.query.strLeague ? req.query.strLeague : '');
-        const getCriterioCache = await cacheProvider.instance().get(cacheKey);
-        if (getCriterioCache)
-            return res.send(getCriterioCache);
+        // const cacheKey = consta.cacheController.resultados.getCriterio + (req.query.strLeague ? req.query.strLeague : '');
+        // const getCriterioCache = await cacheProvider.instance().get(cacheKey);
+        // if (getCriterioCache)
+        //     return res.send(getCriterioCache);
 
         let filtro = {
             activo: true
@@ -123,7 +134,7 @@ exports.getCriterio = async(req, res, next) => {
                 cantidadPaginas: result.totalPages,
                 resResult: result.docs
             }
-            cacheProvider.instance().set(cacheKey, responseGetCriterio, 79240); // menos de 1 dia
+            // cacheProvider.instance().set(cacheKey, responseGetCriterio, 79240); // menos de 1 dia
 
             res.send(responseGetCriterio);
         })
