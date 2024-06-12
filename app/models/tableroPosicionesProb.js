@@ -44,15 +44,7 @@ const tableroPosicionesSchema = new Schema({
     },
     golesProbabilidadMas1: {
         type: Number
-    },
-
-    golesProbabilidadMas2: {
-        type: Number
-    },
-
-    golesProbabilidadMas3: {
-        type: Number
-    },
+    }, 
     tirosaporteriaProb6: {
         type: Number
     },
@@ -83,7 +75,6 @@ const tableroPosicionesSchema = new Schema({
     tirosaporteriaLocalProb5: {
         type: Number
     },
-
     tarjetasLocalProb2: {
         type: Number
     },
@@ -115,7 +106,123 @@ const tableroPosicionesSchema = new Schema({
     activo: {
         type: Boolean,
         default: true
-    } 
+    },
+    // Nuevo 2024 06 09
+    cornersVisitaProbMas3: {
+        type: Number
+    },
+    golesVisitaProbMas0: {
+        type: Number
+    },
+    tirosaporteriaVisitaProb3: {
+        type: Number
+    },
+    tarjetasVisitaProb1: {
+        type: Number
+    },
+
+    // Probabilidad Goles All
+    totalPartido: {
+        ambosEquipos:{
+            goles: {
+                mas1 : { type: Number },
+                mas2 : { type: Number },
+                mas3 : { type: Number },
+                aem: { type: Number }
+            },
+            corners: {
+                mas7 : { type: Number },
+                mas8 : { type: Number },
+                mas9 : { type: Number },
+                mas10 : { type: Number }
+            },
+            tarjetas: {
+                mas2 : { type: Number },
+                mas3 : { type: Number },
+                mas4 : { type: Number },
+                aem : { type: Number }
+            },
+            tirosArco: {
+                mas6 : { type: Number },
+                mas7 : { type: Number },
+                mas8 : { type: Number },
+                mas9 : { type: Number }
+            }
+            
+        },
+        local: {
+            goles: {
+                mas0 : { type: Number },
+                mas1 : { type: Number }
+            },
+            corners: {
+                mas3 : { type: Number },
+                mas4 : { type: Number },
+                mas5 : { type: Number }
+            },
+            tarjetas: {
+                mas1 : { type: Number },
+                mas2 : { type: Number }
+            },
+            tirosArco: {
+                mas3 : { type: Number },
+                mas4 : { type: Number },
+                mas5 : { type: Number }
+            }
+        },
+        visita: {
+            goles: {
+                mas0 : { type: Number },
+                mas1 : { type: Number }
+            },
+            corners: {
+                mas3 : { type: Number },
+                mas4 : { type: Number },
+                mas5 : { type: Number }
+            },
+            tarjetas: {
+                mas1 : { type: Number },
+                mas2 : { type: Number }
+            },
+            tirosArco: {
+                mas3 : { type: Number },
+                mas4 : { type: Number },
+                mas5 : { type: Number }
+            }
+        }
+    },
+    primerTiempo: {
+        ambosEquipos:{
+            goles: {
+                mas0 : { type: Number },
+                mas1 : { type: Number }
+            },
+            corners: {
+                mas3 : { type: Number },
+                mas4 : { type: Number }
+            }
+        },
+        local: {
+            goles: {
+                mas0 : { type: Number }
+            },
+            corners: {
+                mas2 : { type: Number },
+                mas3 : { type: Number }
+            }
+        },
+        visita: {
+            goles: {
+                mas0 : { type: Number }
+            },
+            corners: {
+                mas2 : { type: Number },
+                mas3 : { type: Number }
+            }
+        }
+    }
+            
+
 
 }, {
     versionKey: false,

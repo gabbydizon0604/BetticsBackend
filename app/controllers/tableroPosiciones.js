@@ -8,7 +8,7 @@ let cacheProvider = require('../shared/cache-provider')
 const options = {
     page: 1,
     limit: 50,
-    select: '_id fecha hora liga equipoLocal equipoVisitante posicionLocal posicionVisita  cornersProbabilidadMas6 cornersProbabilidadMas7 cornersProbabilidadMas8 cornersProbabilidadMas9 golesProbabilidadMas1 golesProbabilidadMas2 golesProbabilidadMas3 tirosaporteriaProb6 tirosaporteriaProb7 tirosaporteriaProb8 tirosaporteriaProb9 tarjetasProbabilidad3 tarjetasProbabilidad4 tarjetasProbabilidad5 cornersLocalProbMas5 golesLocalProbMas1 tirosaporteriaLocalProb5 tarjetasLocalProb2 cornersHechoTotalesLocalVisita golesHechoTotalesLocalVisita tirosaporteriaTotalProm tarjetasTotalProm idAwayTeam idHomeTeam idEvent'
+    select: '_id fecha hora liga equipoLocal equipoVisitante posicionLocal posicionVisita  cornersProbabilidadMas6 cornersProbabilidadMas7 cornersProbabilidadMas8 cornersProbabilidadMas9 golesProbabilidadMas1 golesProbabilidadMas2 golesProbabilidadMas3 tirosaporteriaProb6 tirosaporteriaProb7 tirosaporteriaProb8 tirosaporteriaProb9 tarjetasProbabilidad3 tarjetasProbabilidad4 tarjetasProbabilidad5 cornersLocalProbMas5 golesLocalProbMas1 tirosaporteriaLocalProb5 tarjetasLocalProb2 cornersHechoTotalesLocalVisita golesHechoTotalesLocalVisita tirosaporteriaTotalProm tarjetasTotalProm idAwayTeam idHomeTeam idEvent totalPartido primerTiempo'
 }
 
 exports.insertDataMasivo = async(req, res, next) => {
@@ -88,6 +88,8 @@ exports.getCriterio = async(req, res, next) => {
 
         const cacheKey = consta.cacheController.tableroPosiciones.getCriterio + (req.query.strLeague ? req.query.strLeague : '');
         const getCriterioCache = await cacheProvider.instance().get(cacheKey);
+        console.log("getCriterioCache")
+        console.log(getCriterioCache)
         if (getCriterioCache)
             return res.send(getCriterioCache);
 
@@ -105,8 +107,10 @@ exports.getCriterio = async(req, res, next) => {
                 resStatus: 'ok',
                 totalRegistros: result.totalDocs,
                 cantidadPaginas: result.totalPages,
-                resResult: result.docs
+                resResult: JSON.parse(JSON.stringify(result.docs))
             }
+            console.log("responseGetCriterio")
+            console.log(responseGetCriterio)
             cacheProvider.instance().set(cacheKey, responseGetCriterio, 79240); // menos de 1 dia
 
             res.send(responseGetCriterio);

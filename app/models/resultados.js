@@ -30,50 +30,20 @@ const tableroPosicionesSchema = new Schema({
         type: Number,
         required: true
     },
-    cornersProbabilidadMas6: {
-        type: Number
-    },
-    cornersProbabilidadMas7: {
-        type: Number
-    },
-    cornersProbabilidadMas8: {
-        type: Number
-    },
-    cornersProbabilidadMas9: {
-        type: Number
-    },
+   
+ 
     golesProbabilidadMas1: {
         type: Number
     },
 
-    golesProbabilidadMas2: {
-        type: Number
-    },
-
-    golesProbabilidadMas3: {
-        type: Number
-    },
+ 
     tirosaporteriaProb6: {
         type: Number
     },
-    tirosaporteriaProb7: {
-        type: Number
-    },
-    tirosaporteriaProb8: {
-        type: Number
-    },
-    tirosaporteriaProb9: {
-        type: Number
-    },
-    tarjetasProbabilidad3: {
-        type: Number
-    },
-    tarjetasProbabilidad4: {
-        type: Number
-    },
-    tarjetasProbabilidad5: {
-        type: Number
-    },
+
+  
+     
+     
     cornersLocalProbMas5: {
         type: Number
     },
