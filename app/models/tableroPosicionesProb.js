@@ -147,7 +147,7 @@ const tableroPosicionesSchema = new Schema({
                 mas7 : { type: Number },
                 mas8 : { type: Number },
                 mas9 : { type: Number }
-            }
+            },
             
         },
         local: {
@@ -189,6 +189,16 @@ const tableroPosicionesSchema = new Schema({
                 mas4 : { type: Number },
                 mas5 : { type: Number }
             }
+        },
+        unox2: {
+            local_uno: { type: Number },
+            emp_x : { type: Number },
+            visita_dos : { type: Number }
+        },
+        doble_chance: {
+            loe: { type: Number },
+            lov : { type: Number },
+            eov : { type: Number }
         }
     },
     primerTiempo: {
@@ -219,10 +229,18 @@ const tableroPosicionesSchema = new Schema({
                 mas2 : { type: Number },
                 mas3 : { type: Number }
             }
+        },
+        unox2: {
+            local_uno: { type: Number },
+            emp_x : { type: Number },
+            visita_dos : { type: Number }
+        },
+        doble_chance: {
+            loe: { type: Number },
+            lov : { type: Number },
+            eov : { type: Number }
         }
     }
-            
-
 
 }, {
     versionKey: false,

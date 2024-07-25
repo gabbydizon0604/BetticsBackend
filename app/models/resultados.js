@@ -42,7 +42,9 @@ const tableroPosicionesSchema = new Schema({
     },
 
   
-     
+    cornersLocalProbMas7: {
+        type: Number
+    },
      
     cornersLocalProbMas5: {
         type: Number
