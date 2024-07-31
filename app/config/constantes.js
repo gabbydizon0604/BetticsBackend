@@ -29,7 +29,8 @@ module.exports = Object.freeze({
         registroRecurrencia: "registroRecurrencia",
         prioridadPartidos: "prioridadPartidos",
         resultados: "resultados",
-        partidosJugar: "partidosJugar"
+        partidosJugar: "partidosJugar",
+        suscripcion: "suscripcion"
     },
     cacheController: {
         recomendaciones: {

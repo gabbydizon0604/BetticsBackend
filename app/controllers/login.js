@@ -12,7 +12,7 @@ exports.getLogin = async(req, res, next) => {
         const registroRecurrenciaModel = getModel(conn, consta.SchemaName.registroRecurrencia);
         // Verificar si el email existe
         const [usuario, registroRecurrencia] = await Promise.all([
-            Usuario.findOne({ correoElectronico }).select('_id foto nombres apellidos correoElectronico tipoCliente activo informacion password clienteCulquiId tarjetaCulquiId suscripcionCulquiId billeteraMovilPagadoId billeteraMovilPagadoFecha tipoLicencia'),
+            Usuario.findOne({ correoElectronico }).select('_id foto nombres apellidos correoElectronico tipoCliente activo informacion password clienteCulquiId tarjetaCulquiId suscripcionCulquiId billeteraMovilPagadoId billeteraMovilPagadoFecha tipoLicencia suscripcionPaypalId suscription_create_time'),
             getRegistroRecurrenciaLogin(conn, res, next, registroRecurrenciaModel, { correoElectronico })
         ])
 
@@ -46,7 +46,9 @@ exports.getLogin = async(req, res, next) => {
             suscripcionCulquiId: usuario.suscripcionCulquiId,
             tarjetaCulquiId: usuario.tarjetaCulquiId,
             billeteraMovilPagadoId: usuario.billeteraMovilPagadoId,
-            tipoLicencia: usuario.tipoLicencia
+            tipoLicencia: usuario.tipoLicencia,
+            suscripcionPaypalId: usuario.suscripcionPaypalId,
+            suscription_create_time: usuario.suscription_create_time
         }
 
         const dataRecurrencia = {

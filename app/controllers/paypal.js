@@ -3,6 +3,7 @@ const { getModel, conectionManager } = require('../config/connection');
 const consta = require('../config/constantes')
 var axios = require('axios');
 const qs = require('qs');
+var mongoose = require('mongoose');
 
 const options = {
     page: 1,
@@ -14,39 +15,42 @@ const auth = { user: process.env.PAYPAL_CLIENT_ID, pass: process.env.PAYPAL_CLIE
 
 exports.crearSuscripcion = async (req, res, next) => {
 
+    const conn = conectionManager(req);
+
     try {
+        const currency_code = 'USD';
+        const amount_value = '3.00';
 
         let data = {
             "plan_id": req.body.plan_id,
             "start_time": req.body.start_time,
             "quantity": "1",
             "shipping_amount": {
-                "currency_code": "USD",
-                "value": "3.00"
+                "currency_code": currency_code,
+                "value": amount_value
             },
             "subscriber": {
                 "name": {
-                    "given_name": "John",
-                    "surname": "Doe"
+                    "given_name": req.body.given_name,
+                    "surname": req.body.surname
                 },
-                "email_address": "customer@example.com",
+                "usuario_id": req.body.usuario_id,
+                "email_address": req.body.email_address,
                 "shipping_address": {
                     "name": {
-                        "full_name": "John Doe"
+                        "full_name": req.body.given_name + " " + req.body.surname
                     },
                     "address": {
-                        "address_line_1": "2211 N First Street",
-                        "address_line_2": "Building 17",
-                        "admin_area_2": "San Jose",
+                        "address_line_1": req.body.address_line_1,
                         "admin_area_1": "CA",
-                        "postal_code": "95131",
-                        "country_code": "US"
+                        "postal_code": req.body.postal_code,
+                        "country_code": req.body.country_code
                     }
                 }
             },
             "application_context": {
                 "brand_name": "Bettics Sac",
-                "locale": "en-US",
+                "locale": "es-PE",
                 "shipping_preference": "SET_PROVIDED_ADDRESS",
                 "user_action": "SUBSCRIBE_NOW",
                 "payment_method": {
@@ -72,19 +76,35 @@ exports.crearSuscripcion = async (req, res, next) => {
             } 
         };
 
-        // const resSuscription = wa axios.request(config);
-        // const resSuscription = await axios.post(process.env.PAYPAL_URL + '/v1/billing/subscriptions', data, config);
-        // const { status, data = {} } = await axios(options);
-
         const resSuscription = await axios.post(
             `${process.env.PAYPAL_URL}/v1/billing/subscriptions`,
             data,
             config
         );
 
-        console.log("resSuscription data");
-        // console.log(resSuscription.data);
-        console.log(resSuscription.data.details);
+        console.log(resSuscription.data)
+        // Guardamos en la DB
+
+        const dataSuscripcion = {
+            _id : new mongoose.Types.ObjectId(),
+            correoElectronico: req.body.email_address,
+            webhookId : "",
+            suscriptionId : resSuscription.data.id,
+            event_type : "",
+            shipping_amount_currency_code:  currency_code,
+            shipping_amount_value: amount_value,
+            estado: resSuscription.data.status,
+            create_time: resSuscription.data.create_time,
+            plan_id: resSuscription.data.plan_id,
+            usuarioId: req.usuarioConectado._id
+        }
+        const SuscripcionModel = getModel(conn, consta.SchemaName.suscripcion);
+        const resultDB = await SuscripcionModel.updateOne(
+            { 
+                suscriptionId: resSuscription.data.id
+            }, {
+            $set: dataSuscripcion
+        }, {upsert: true, setDefaultsOnInsert: true})
 
         return res.json({
             resultado: 'ok',
@@ -110,38 +130,102 @@ exports.crearSuscripcion = async (req, res, next) => {
 
         // console.log(err)
         return errorMiddleware(err, req, res, next);
-    } finally { }
+    } finally { conn.close();}
 }
 
 
 exports.webhook = async (req, res, next) => {
-
+    const conn = conectionManager(req);
     try {
         console.log(req.body.event_type);
+        console.log(req.body);
         if(req.body.event_type == "BILLING.SUBSCRIPTION.ACTIVATED"){
+
             console.log("BILLING.SUBSCRIPTION.ACTIVATED");
             const email = req.body.resource.subscriber.email_address;
 
             const dataSuscripcion = {
-                email: email,
-                suscriptionId : req.body.id,
+                correoElectronico: email,
+                webhookId : req.body.id,
+                suscriptionId : req.body.resource.id,
                 event_type : req.body.event_type,
-                shipping_amount: {
-                    currency_code : req.body.shipping_amount.currency_code,
-                    value : req.body.shipping_amount.value,
-                },
-                
+                shipping_amount_currency_code:  req.body.resource.shipping_amount.currency_code,
+                shipping_amount_value:req.body.resource.shipping_amount.value,
+                estado: req.body.resource.status,
+                create_time: req.body.resource.create_time,
+            }
+            console.log("dataSuscripcion");
+            console.log(dataSuscripcion);
+
+            const suscripcionDataDB = await getSuscripcionDB(conn, dataSuscripcion.suscriptionId);
+
+            const SuscripcionModel = getModel(conn, consta.SchemaName.suscripcion);
+            const UsuarioModel = getModel(conn, consta.SchemaName.usuario);
+
+            const [resultadoSuscripcion, updUsuario] = await Promise.all([ 
+                SuscripcionModel.updateOne(
+                    { 
+                        suscriptionId: req.body.resource.id
+                    }, {
+                    $set: dataSuscripcion
+                }),
+                UsuarioModel.findOneAndUpdate({
+                    _id: suscripcionDataDB.usuarioId,
+                    activo: true
+                }, {
+                    $set: {
+                        suscripcionPaypalId: dataSuscripcion.suscriptionId,
+                        suscription_next_billing_time: req.body.resource.next_billing_time, 
+                        suscription_create_time: req.body.resource.create_time 
+                    }
+                }).select("_id")
+            ]);
+        }
+
+        if(
+            req.body.event_type == "BILLING.SUBSCRIPTION.CANCELLED" ||
+            req.body.event_type == "BILLING.SUBSCRIPTION.EXPIRED" || 
+            req.body.event_type == "BILLING.SUBSCRIPTION.SUSPENDED"
+        ){
+            console.log("BILLING.SUBSCRIPTION.CANCELLED IF");
+
+            const dataSuscripcion = {
+                estado: "CANCELLED",
+                event_type : req.body.event_type,
+                reason_cancel: req.body.resource.status_change_note
             }
 
+            const suscripcionDataDB = await getSuscripcionDB(conn, req.body.resource.id);
+            const SuscripcionModel = getModel(conn, consta.SchemaName.suscripcion);
+            const UsuarioModel = getModel(conn, consta.SchemaName.usuario);
+
+            const [resultadoSuscripcion, updUsuario] = await Promise.all([ 
+                SuscripcionModel.updateOne(
+                    { 
+                        suscriptionId: req.body.resource.id
+                    }, {
+                    $set: dataSuscripcion
+                }),
+                UsuarioModel.findOneAndUpdate({
+                    _id: suscripcionDataDB.usuarioId,
+                    activo: true
+                }, {
+                    $set: {
+                        suscripcionPaypalId: null,
+                        suscription_next_billing_time: null, 
+                        suscription_create_time: null
+                    }
+                }).select("_id")
+            ]);
+            
         }
-        console.log("req.body");
-        console.log(req.body);
         return res.json({
             resultado: 'ok'
         })
     } catch (err) {
+        console.log(err)
         return errorMiddleware(err, req, res, next);
-    } finally { }
+    } finally { conn.close(); }
 }
 
 
@@ -173,23 +257,10 @@ const getTokenPaypal = async () => {
 exports.getSuscripcion = async (req, res, next) => {
 
     try {
-
-        const accessToken = await getTokenPaypal();
-
-        let config = {
-            headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-            } 
-        };
-
         console.log("req.params.suscriptionId")
         console.log(req.params.suscriptionId)
-
-        const responseGet = await axios.get( process.env.PAYPAL_URL + '/v1/billing/subscriptions/'  + req.params.suscriptionId, config);
-        console.log("responseGet")
-        return res.json(responseGet.data);
+        const responseGet = await getSuscripcion(req.params.suscriptionId);
+        return res.json(responseGet);
 
     } catch (err) {
         console.log("err.data.details");
@@ -209,91 +280,145 @@ exports.getSuscripcion = async (req, res, next) => {
 }
 
 
+const getSuscripcion = async (suscriptionId) => { 
+    
+    const accessToken = await getTokenPaypal();
 
-// export const createOrder = async (req, res) => {
-//     try {
-//         const order = {
-//             intent: "CAPTURE",
-//             purchase_units: [
-//                 {
-//                     amount: {
-//                         currency_code: "USD",
-//                         value: "105.70",
-//                     },
-//                 },
-//             ],
-//             application_context: {
-//                 brand_name: "mycompany.com",
-//                 landing_page: "NO_PREFERENCE",
-//                 user_action: "PAY_NOW",
-//                 return_url: `${HOST}/capture-order`,
-//                 cancel_url: `${HOST}/cancel-payment`,
-//             },
-//         };
+    let config = {
+        headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        } 
+    };
 
-//         // format the body
-//         const params = new URLSearchParams();
-//         params.append("grant_type", "client_credentials");
+    const responseGet = await axios.get( process.env.PAYPAL_URL + '/v1/billing/subscriptions/'  + suscriptionId, config);
+    console.log("responseGet")
+    return responseGet.data;
+}
 
-//         // Generate an access token
-//         const {
-//             data: { access_token },
-//         } = await axios.post(
-//             "https://api-m.sandbox.paypal.com/v1/oauth2/token",
-//             params,
-//             {
-//                 headers: {
-//                     "Content-Type": "application/x-www-form-urlencoded",
-//                 },
-//                 auth: {
-//                     username: PAYPAL_API_CLIENT,
-//                     password: PAYPAL_API_SECRET,
-//                 },
-//             }
-//         );
+const getSuscripcionDB = async (conn, suscriptionId) => { 
+ 
+    const SuscripcionModel = getModel(conn, consta.SchemaName.suscripcion);
+    const suscriptionBD = await SuscripcionModel.findOne({
+        suscriptionId: suscriptionId
+    }).select("_id suscriptionId usuarioId");
+    
+    console.log("suscriptionBD")
+    console.log(suscriptionBD)
 
-//         console.log(access_token);
+    return suscriptionBD;
+}
 
-//         // make a request
-//         const response = await axios.post(
-//             `${PAYPAL_API}/v2/checkout/orders`,
-//             order,
-//             {
-//                 headers: {
-//                     Authorization: `Bearer ${access_token}`,
-//                 },
-//             }
-//         );
+exports.getSuscripcionDB = async (req, res, next) => {
 
-//         console.log(response.data);
+    const conn = conectionManager(req);
+    try {
+        const responseGet = await getSuscripcionDB(conn, req.params.suscriptionId);
+        return res.json(responseGet);
 
-//         return res.json(response.data);
-//     } catch (error) {
-//         console.log(error);
-//         return res.status(500).json("Something goes wrong");
-//     }
-// };
+    } catch (err) {
+        console.log("err.data.details");
+        console.log(err);
+        if (err.response) {
+            console.log(err.response.data);
+            console.log(err.response.status);
+            console.log(err.response.headers);
+          } else if (err.request) {
+            console.log(err.request);
+          } else {
+            console.log('Error', err.message);
+          }
 
-// export const captureOrder = async (req, res) => {
-//     const { token } = req.query;
+        return errorMiddleware(err, req, res, next);
+    } finally { conn.close(); }
+}
 
-//     try {
-//         const response = await axios.post(
-//             `${PAYPAL_API}/v2/checkout/orders/${token}/capture`,
-//             {},
-//             {
-//                 auth: {
-//                     username: PAYPAL_API_CLIENT,
-//                     password: PAYPAL_API_SECRET,
-//                 },
-//             }
-//         );
 
-//         console.log(response.data);
+exports.cancelarSuscripcion = async (req, res, next) => {
 
-//         res.redirect("/payed.html");
-//     } catch (error) {
-//         console.log(error.message);
-//         return res.status(500).json({ message: "Internal Server error" });
-//     }
-// };
+    const conn = conectionManager(req);
+
+    try {
+
+        const accessToken = await getTokenPaypal();
+
+        let config = {
+            method: 'post',
+            maxBodyLength: Infinity,
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Prefer': 'return=representation'
+            } 
+        };
+        console.log("antes de.data")
+
+        const resSuscription = await axios.post(
+            `${process.env.PAYPAL_URL}/v1/billing/subscriptions/${req.params.suscriptionId}/cancel`,
+            req.body,
+            config
+        );
+
+        console.log("resSuscription.data")
+        console.log(resSuscription)
+        console.log(resSuscription.data)
+        // Guardamos en la DB
+
+        if(resSuscription.status == 204){
+
+            const dataSuscripcion = {
+                estado: "CANCELLED",
+                reason_cancel: req.body.reason
+            }
+
+            const suscripcionDataDB = await getSuscripcionDB(conn, req.params.suscriptionId);
+            const SuscripcionModel = getModel(conn, consta.SchemaName.suscripcion);
+            const UsuarioModel = getModel(conn, consta.SchemaName.usuario);
+
+            const [resultadoSuscripcion, updUsuario] = await Promise.all([ 
+                SuscripcionModel.updateOne(
+                    { 
+                        suscriptionId: req.params.suscriptionId,
+                    }, {
+                    $set: dataSuscripcion
+                }),
+                UsuarioModel.findOneAndUpdate({
+                    _id: suscripcionDataDB.usuarioId,
+                    activo: true
+                }, {
+                    $set: {
+                        suscripcionPaypalId: null,
+                        suscription_next_billing_time: null, 
+                        suscription_create_time: null
+                    }
+                }).select("_id")
+            ]);
+
+            return res.json({
+                resultado: 'ok'
+            })
+        }
+
+        return res.json({
+            resultado: 'noOk2'
+        })
+
+    } catch (err) {
+        console.log("err.data.details");
+        if (err.response) {
+            // that falls out of the range of 2xx
+            console.log(err.response.data);
+            console.log(err.response.status);
+            console.log(err.response.headers);
+          } else if (err.request) {
+            console.log(err.request);
+          } else {
+            console.log('Error', err.message);
+          }
+
+        // console.log(err)
+        return errorMiddleware(err, req, res, next);
+    } finally { conn.close();}
+}

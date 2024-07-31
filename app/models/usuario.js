@@ -120,7 +120,18 @@ const usuarioSchema = new Schema({
         type: String,
         default: null
     },
-
+    suscripcionPaypalId: {
+        type: String,
+        default: null
+    },
+    suscription_next_billing_time: {
+        type: Date,
+        default: null
+    },
+    suscription_create_time: {
+        type: Date,
+        default: null
+    }
     // "relacionCompania": null,
     // "relacionComprobantes": null
 }, {

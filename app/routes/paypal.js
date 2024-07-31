@@ -23,5 +23,16 @@ router.get(
     controller.getSuscripcion
 )
 
+router.get(
+    `${path}/getSuscripcionDB/:suscriptionId`,
+    validarJwt,
+    controller.getSuscripcionDB
+)
+
+router.post(
+    `${path}/cancelarSuscripcion/:suscriptionId`,
+    validarJwt,
+    controller.cancelarSuscripcion
+)
 
 module.exports = router;
