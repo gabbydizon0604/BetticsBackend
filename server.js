@@ -4,6 +4,29 @@ const cors = require('cors')
 const app = express()
 
 const port = process.env.PORT
+
+// Validate required environment variables at startup
+function validateEnvironment() {
+    const required = ['USR_NAME', 'PSS_WORD', 'CLU'];
+    const missing = required.filter(key => !process.env[key]);
+    
+    if (missing.length > 0) {
+        console.error('========================================');
+        console.error('ERROR: Missing required environment variables:');
+        missing.forEach(key => console.error(`  - ${key}`));
+        console.error('========================================');
+        console.error('Please set these variables in your Render dashboard:');
+        console.error('  - USR_NAME: MongoDB username');
+        console.error('  - PSS_WORD: MongoDB password');
+        console.error('  - CLU: MongoDB cluster name (e.g., serverfe-prod.4dt1r)');
+        console.error('========================================');
+        // Don't exit - let it fail gracefully with better error messages
+    } else {
+        console.log('✓ Required environment variables validated');
+    }
+}
+
+validateEnvironment();
 const errorMiddleware = require('./app/middleware/errors')
 const loginRouters = require('./app/routes/login')
 const usuarioRouters = require('./app/routes/usuario')
