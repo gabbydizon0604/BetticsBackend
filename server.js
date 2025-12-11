@@ -1,4 +1,30 @@
 require('dotenv').config()
+
+// Validate environment variables on startup
+const requiredEnvVars = ['USR_NAME', 'PSS_WORD', 'CLU'];
+const missingEnvVars = requiredEnvVars.filter(key => {
+    const value = process.env[key];
+    return !value || (typeof value === 'string' && value.trim() === '');
+});
+
+if (missingEnvVars.length > 0) {
+    console.error('❌ CRITICAL: Missing required environment variables:', missingEnvVars.join(', '));
+    console.error('The application cannot start without these variables.');
+    console.error('Please set them in your .env file or environment configuration (Render, etc.)');
+    console.error('');
+    console.error('Required variables:');
+    console.error('  - USR_NAME: MongoDB username');
+    console.error('  - PSS_WORD: MongoDB password');
+    console.error('  - CLU: MongoDB cluster name (e.g., "serverfe.qz1jw")');
+    console.error('');
+    console.error('Current status:', {
+        USR_NAME: process.env.USR_NAME ? '✅ SET' : '❌ MISSING',
+        PSS_WORD: process.env.PSS_WORD ? '✅ SET' : '❌ MISSING',
+        CLU: process.env.CLU || '❌ MISSING'
+    });
+    process.exit(1);
+}
+
 const express = require('express')
 const cors = require('cors')
 const app = express()

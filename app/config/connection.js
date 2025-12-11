@@ -5,11 +5,19 @@ require('dotenv').config()
 // Validate required environment variables
 const validateEnvVars = () => {
     const required = ['USR_NAME', 'PSS_WORD', 'CLU'];
-    const missing = required.filter(key => !process.env[key] || process.env[key].trim() === '');
+    const missing = required.filter(key => {
+        const value = process.env[key];
+        return !value || (typeof value === 'string' && value.trim() === '');
+    });
     
     if (missing.length > 0) {
         console.error('❌ Missing required environment variables:', missing.join(', '));
         console.error('Please ensure these are set in your .env file or environment variables');
+        console.error('Current env values:', {
+            USR_NAME: process.env.USR_NAME ? 'SET' : 'MISSING',
+            PSS_WORD: process.env.PSS_WORD ? 'SET' : 'MISSING',
+            CLU: process.env.CLU ? 'SET' : 'MISSING'
+        });
         return false;
     }
     return true;
@@ -30,10 +38,16 @@ const conectionManager = (req, db) => {
             useNewUrlParser: true
         }
         
-        // Trim CLU to handle any whitespace issues
-        const cluster = process.env.CLU.trim();
-        const username = process.env.USR_NAME.trim();
-        const password = process.env.PSS_WORD.trim();
+        // Safely get and trim environment variables (they're already validated)
+        const cluster = (process.env.CLU || '').trim();
+        const username = (process.env.USR_NAME || '').trim();
+        const password = (process.env.PSS_WORD || '').trim();
+        
+        // Double-check they're not empty after trimming
+        if (!cluster || !username || !password) {
+            console.error('❌ Environment variables are empty after trimming. Cannot create connection.');
+            return null;
+        }
         
         const connectionString = `mongodb+srv://${username}:${password}@${cluster}.mongodb.net/${dbname}?retryWrites=true&w=majority`;
         
@@ -64,10 +78,15 @@ const dbConnection = async(req, res, next) => {
         const dbname = `FE_${req.headers.grupocompania}_${req.headers.companiaid}`;
         console.log(`Connecting to database: ${dbname}`);
         
-        // Trim environment variables to handle whitespace
-        const cluster = process.env.CLU.trim();
-        const username = process.env.USR_NAME.trim();
-        const password = process.env.PSS_WORD.trim();
+        // Safely get and trim environment variables (they're already validated)
+        const cluster = (process.env.CLU || '').trim();
+        const username = (process.env.USR_NAME || '').trim();
+        const password = (process.env.PSS_WORD || '').trim();
+        
+        // Double-check they're not empty after trimming
+        if (!cluster || !username || !password) {
+            throw new Error('Environment variables are empty. Cannot connect to database.');
+        }
         
         const connectionString = `mongodb+srv://${username}:${password}@${cluster}.mongodb.net/${dbname}?retryWrites=true&w=majority`;
         
