@@ -18,6 +18,10 @@ const prioridadPartidosRouters = require('./app/routes/prioridadPartidos')
 const resultadosRouters = require('./app/routes/resultados')
 const partidosJugarRouters = require('./app/routes/partidosJugar')
 const paypalRouters = require('./app/routes/paypal')
+const chatbotRouters = require('./app/routes/chatbot')
+const chatbotAdminRouters = require('./app/routes/chatbot-admin')
+const chatbotDialogflowRouters = require('./app/routes/chatbot-dialogflow')
+const chatbotConversationRouters = require('./app/routes/chatbot-conversation')
     //const logErroresRouters = require('./app/routes/logErrores')
 let cacheProvider = require('./app/shared/cache-provider')
 
@@ -89,6 +93,10 @@ class Server {
         this.app.use(resultadosRouters, errorMiddleware)
         this.app.use(partidosJugarRouters, errorMiddleware)
         this.app.use(paypalRouters, errorMiddleware)
+        this.app.use(chatbotRouters, errorMiddleware)
+        this.app.use(chatbotAdminRouters, errorMiddleware)
+        this.app.use(chatbotDialogflowRouters, errorMiddleware)
+        this.app.use(chatbotConversationRouters, errorMiddleware)
         
     }
 

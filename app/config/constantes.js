@@ -30,7 +30,11 @@ module.exports = Object.freeze({
         prioridadPartidos: "prioridadPartidos",
         resultados: "resultados",
         partidosJugar: "partidosJugar",
-        suscripcion: "suscripcion"
+        suscripcion: "suscripcion",
+        chatbotFAQ: "chatbotFAQ",
+        chatbotKnowledgeBase: "chatbotKnowledgeBase",
+        matchStatistics: "matchStatistics",
+        chatbotConversation: "chatbotConversation"
     },
     cacheController: {
         recomendaciones: {
