@@ -2,64 +2,22 @@ const mongoose = require('mongoose')
 const consta = require('../config/constantes')
 require('dotenv').config()
 
-// Validate required environment variables
-const validateEnvVars = () => {
-    const required = ['USR_NAME', 'PSS_WORD', 'CLU'];
-    const missing = required.filter(key => {
-        const value = process.env[key];
-        return !value || (typeof value === 'string' && value.trim() === '');
-    });
-    
-    if (missing.length > 0) {
-        console.error('❌ Missing required environment variables:', missing.join(', '));
-        console.error('Please ensure these are set in your .env file or environment variables');
-        console.error('Current env values:', {
-            USR_NAME: process.env.USR_NAME ? 'SET' : 'MISSING',
-            PSS_WORD: process.env.PSS_WORD ? 'SET' : 'MISSING',
-            CLU: process.env.CLU ? 'SET' : 'MISSING'
-        });
-        return false;
-    }
-    return true;
-}
-
 const conectionManager = (req, db) => {
 
     try {
-        // Validate environment variables before attempting connection
-        if (!validateEnvVars()) {
-            console.error('Cannot create MongoDB connection: missing environment variables');
-            return null;
-        }
-
         const dbname = db ? db : `DB_Analytic_Bet`;
         const options = {
             useUnifiedTopology: true,
             useNewUrlParser: true
         }
-        
-        // Safely get and trim environment variables (they're already validated)
-        const cluster = (process.env.CLU || '').trim();
-        const username = (process.env.USR_NAME || '').trim();
-        const password = (process.env.PSS_WORD || '').trim();
-        
-        // Double-check they're not empty after trimming
-        if (!cluster || !username || !password) {
-            console.error('❌ Environment variables are empty after trimming. Cannot create connection.');
-            return null;
-        }
-        
-        const connectionString = `mongodb+srv://${username}:${password}@${cluster}.mongodb.net/${dbname}?retryWrites=true&w=majority`;
-        
-        console.log(`Attempting to connect to MongoDB cluster: ${cluster}.mongodb.net`);
-        const conn = mongoose.createConnection(connectionString, options)
-        conn.on('open', () => console.log('✅ DB connection open'))
-        conn.on('error', err => console.log(`❌ DB connection error : ${err.message}`, err))
-        conn.on('close', () => console.log('⚠️ DB connection closed'))
+        const conn = mongoose.createConnection(`mongodb+srv://${process.env.USR_NAME}:${process.env.PSS_WORD}@${process.env.CLU}.mongodb.net/${dbname}?retryWrites=true&w=majority`, options)
+        conn.on('open', () => console.log('DB connection open'))
+        conn.on('error', err => console.log(`DB connection error : ${err.message}`, err))
+        conn.on('close', () => console.log('DB connection closed'))
         return conn;
 
     } catch (error) {
-        console.error('❌ Error creating MongoDB connection:', error);
+        console.log(error);
         return null;
     }
 }
@@ -70,35 +28,17 @@ const getModel = (conn, schemaName, req) => {
 
 const dbConnection = async(req, res, next) => {
     try {
-        // Validate environment variables before attempting connection
-        if (!validateEnvVars()) {
-            throw new Error('Missing required MongoDB environment variables (USR_NAME, PSS_WORD, CLU)');
-        }
-
         const dbname = `FE_${req.headers.grupocompania}_${req.headers.companiaid}`;
-        console.log(`Connecting to database: ${dbname}`);
-        
-        // Safely get and trim environment variables (they're already validated)
-        const cluster = (process.env.CLU || '').trim();
-        const username = (process.env.USR_NAME || '').trim();
-        const password = (process.env.PSS_WORD || '').trim();
-        
-        // Double-check they're not empty after trimming
-        if (!cluster || !username || !password) {
-            throw new Error('Environment variables are empty. Cannot connect to database.');
-        }
-        
-        const connectionString = `mongodb+srv://${username}:${password}@${cluster}.mongodb.net/${dbname}?retryWrites=true&w=majority`;
-        
-        await mongoose.connect(connectionString, {
+        console.log(dbname);
+        await mongoose.connect(`mongodb+srv://${process.env.USR_NAME}:${process.env.PSS_WORD}@${process.env.CLU}.mongodb.net/${dbname}`, {
             useNewUrlParser: true,
             useUnifiedTopology: true
         });
-        console.log('✅ Base de datos online');
+        console.log('Base de datos online');
         next();
     } catch (error) {
-        console.error('❌ Database connection error:', error.message);
-        throw new Error('Error a la hora de iniciar la base de datos: ' + error.message);
+        console.log(error);
+        throw new Error('Error a la hora de iniciar la base de datos');
     }
 }
 
