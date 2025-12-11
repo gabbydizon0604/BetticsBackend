@@ -8,20 +8,63 @@ const missingEnvVars = requiredEnvVars.filter(key => {
 });
 
 if (missingEnvVars.length > 0) {
-    console.error('❌ CRITICAL: Missing required environment variables:', missingEnvVars.join(', '));
-    console.error('The application cannot start without these variables.');
-    console.error('Please set them in your .env file or environment configuration (Render, etc.)');
     console.error('');
-    console.error('Required variables:');
-    console.error('  - USR_NAME: MongoDB username');
-    console.error('  - PSS_WORD: MongoDB password');
-    console.error('  - CLU: MongoDB cluster name (e.g., "serverfe.qz1jw")');
+    console.error('╔═══════════════════════════════════════════════════════════════╗');
+    console.error('║  ❌ CRITICAL: Missing Required Environment Variables          ║');
+    console.error('╚═══════════════════════════════════════════════════════════════╝');
     console.error('');
-    console.error('Current status:', {
-        USR_NAME: process.env.USR_NAME ? '✅ SET' : '❌ MISSING',
-        PSS_WORD: process.env.PSS_WORD ? '✅ SET' : '❌ MISSING',
-        CLU: process.env.CLU || '❌ MISSING'
-    });
+    console.error('Missing variables:', missingEnvVars.join(', '));
+    console.error('');
+    
+    // Detect if running on Render
+    const isRender = process.env.RENDER || process.env.RENDER_EXTERNAL_HOSTNAME;
+    
+    if (isRender) {
+        console.error('📍 DETECTED: You are running on Render');
+        console.error('');
+        console.error('🔧 TO FIX - Follow these steps:');
+        console.error('');
+        console.error('1. Go to: https://dashboard.render.com/');
+        console.error('2. Select your backend service');
+        console.error('3. Click "Environment" in the left sidebar');
+        console.error('4. Click "Add Environment Variable" for each:');
+        console.error('');
+        console.error('   Variable Name: USR_NAME');
+        console.error('   Value: [Your MongoDB username]');
+        console.error('');
+        console.error('   Variable Name: PSS_WORD');
+        console.error('   Value: [Your MongoDB password]');
+        console.error('');
+        console.error('   Variable Name: CLU');
+        console.error('   Value: [Your cluster name, e.g., "serverfe.qz1jw"]');
+        console.error('   ⚠️  IMPORTANT: Use ONLY the cluster name, NOT ".mongodb.net"');
+        console.error('');
+        console.error('5. Click "Save Changes"');
+        console.error('6. Render will automatically redeploy');
+        console.error('');
+    } else {
+        console.error('📍 You are running locally');
+        console.error('');
+        console.error('🔧 TO FIX - Create a .env file in the backend directory:');
+        console.error('');
+        console.error('USR_NAME=your_mongodb_username');
+        console.error('PSS_WORD=your_mongodb_password');
+        console.error('CLU=your_cluster_name');
+        console.error('');
+    }
+    
+    console.error('📋 Required variables:');
+    console.error('  • USR_NAME: MongoDB username');
+    console.error('  • PSS_WORD: MongoDB password');
+    console.error('  • CLU: MongoDB cluster name (e.g., "serverfe.qz1jw")');
+    console.error('');
+    console.error('📊 Current status:');
+    console.error('  USR_NAME:', process.env.USR_NAME ? '✅ SET' : '❌ MISSING');
+    console.error('  PSS_WORD:', process.env.PSS_WORD ? '✅ SET' : '❌ MISSING');
+    console.error('  CLU:', process.env.CLU || '❌ MISSING');
+    console.error('');
+    console.error('📖 For detailed instructions, see: RENDER_SETUP.md');
+    console.error('');
     process.exit(1);
 }
 

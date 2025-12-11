@@ -1,0 +1,54 @@
+# Render Blueprint Configuration
+# This file documents the required environment variables
+# Note: You still need to manually set these in the Render dashboard
+
+services:
+  - type: web
+    name: bettics-backend
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      # REQUIRED - MongoDB Configuration
+      - key: USR_NAME
+        sync: false
+        description: MongoDB username
+      - key: PSS_WORD
+        sync: false
+        description: MongoDB password
+      - key: CLU
+        sync: false
+        description: MongoDB cluster name (e.g., "serverfe.qz1jw") - NO .mongodb.net
+      
+      # REQUIRED - Server Configuration
+      - key: PORT
+        value: 3010
+        description: Server port
+      
+      # REQUIRED - Security
+      - key: KEY_JWT
+        sync: false
+        description: JWT secret key for authentication
+      
+      # OPTIONAL - PayPal Integration
+      - key: PAYPAL_CLIENT_ID
+        sync: false
+        description: PayPal Client ID
+      - key: PAYPAL_CLIENT_SECRET
+        sync: false
+        description: PayPal Client Secret
+      - key: PAYPAL_URL
+        value: https://api-m.sandbox.paypal.com
+        description: PayPal API URL
+      - key: PAYPAL_SUCESSS_URL
+        value: https://bettics-frontend.vercel.app/cuenta/suscripcion/exitoso
+        description: PayPal success redirect URL
+      - key: PAYPAL_ERROR_URL
+        value: https://bettics-frontend.vercel.app/cuenta/suscripcion/fallido
+        description: PayPal error redirect URL
+      
+      # OPTIONAL - Email Service
+      - key: SENDGRID_API_KEY
+        sync: false
+        description: SendGrid API key for email service
+
