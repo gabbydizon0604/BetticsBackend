@@ -56,8 +56,49 @@ class Server {
 
     middlewares() {
 
-        // CORS
-        this.app.use(cors());
+        // CORS Configuration
+        const corsOptions = {
+            origin: function (origin, callback) {
+                // Allow requests with no origin (like mobile apps, curl, Postman)
+                if (!origin) return callback(null, true);
+                
+                // List of allowed origins
+                const allowedOrigins = [
+                    'https://bettics-frontend.vercel.app',
+                    /^https:\/\/.*\.vercel\.app$/, // All Vercel deployments (including preview URLs)
+                    /^https:\/\/bettics-frontend.*\.vercel\.app$/, // Specific Vercel preview deployments
+                    'http://localhost:4200', // Local development
+                    'http://localhost:3000', // Local development alternative
+                ];
+                
+                // Check if origin matches any allowed pattern
+                const isAllowed = allowedOrigins.some(allowed => {
+                    if (typeof allowed === 'string') {
+                        return origin === allowed;
+                    } else if (allowed instanceof RegExp) {
+                        return allowed.test(origin);
+                    }
+                    return false;
+                });
+                
+                if (isAllowed) {
+                    callback(null, true);
+                } else {
+                    // Log blocked origin for debugging (remove in production)
+                    console.log('CORS: Blocked origin:', origin);
+                    callback(null, true); // Allow for now - change to callback(new Error('Not allowed by CORS')) for stricter security
+                }
+            },
+            credentials: true,
+            methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+            allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+            exposedHeaders: ['Content-Length', 'X-Foo', 'X-Bar'],
+            preflightContinue: false,
+            optionsSuccessStatus: 204
+        };
+        
+        this.app.use(cors(corsOptions));
+        
         this.app.use(
             express.json({
                 limit: '20mb'
