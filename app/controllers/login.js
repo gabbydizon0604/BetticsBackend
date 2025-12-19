@@ -95,7 +95,7 @@ exports.getLogin = async(req, res, next) => {
         }
         // Verificar la contraseña
         const validPassword = bcryptjs.compareSync(password, usuario.password);
-        console.log(validPassword);
+        console.log(validPassword, "00000000000000000000000000000000000");
         if (!validPassword) {
             return res.status(400).json({
                 message: 'La contraseña ingresada es .'
