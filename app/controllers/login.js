@@ -138,7 +138,7 @@ exports.getLogin = async(req, res, next) => {
     } catch (err) {
         console.error('Login error:', err);
         return res.status(500).json({
-            message: 'Error al procesar el login. Por favor, intente nuevamente.'
+            message: `${err}`
         });
     } finally { 
         if (conn) conn.close(); 
