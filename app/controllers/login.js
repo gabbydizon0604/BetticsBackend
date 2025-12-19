@@ -94,7 +94,7 @@ exports.getLogin = async(req, res, next) => {
             });
         }
         // Verificar la contraseña
-        const validPassword = bcrypt.compare(password, usuario.password);
+        const validPassword = bcryptjs.compareSync(password, usuario.password);
         if (!validPassword) {
             return res.status(400).json({
                 message: 'La contraseña ingresada es incorrecta.'
